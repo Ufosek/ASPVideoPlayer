@@ -34,6 +34,8 @@ import AVFoundation
      */
     public typealias ErrorClosure = ((_ error: NSError) -> Void)?
     
+    // public typealias BufferingClosure = ((_ isBuffering: Bool) -> Void)?
+    
     // MARK: - Enumerations -
     
     /**
@@ -149,6 +151,8 @@ import AVFoundation
      A closure that will be called when an error occured.
      */
     open var error: ErrorClosure
+    
+    // open var buffering: BufferingClosure
     
     // MARK: - Public Variables -
     
@@ -413,6 +417,8 @@ import AVFoundation
     open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?) {
         guard let asset = object as? AVPlayerItem, let keyPath = keyPath else { return }
         
+        print("PLAYER 666 - OBSERVER - \(keyPath)")
+        
         if asset == player.currentItem && keyPath == "status" {
             if asset.status == .readyToPlay {
                 if status == .new {
@@ -437,6 +443,12 @@ import AVFoundation
                 
                 delegate?.error?(error: videoError)
             }
+        } else {
+            if keyPath == "playbackBufferEmpty" {
+                print("PLAYER 666 - BUFFERING")
+            } else if keyPath == "playbackLikelyToKeepUp" {
+                print("PLAYER 666 - BUFFERING FINISHED (?)")
+            }
         }
     }
     
@@ -452,6 +464,8 @@ import AVFoundation
         
         if let currentItem = player.currentItem {
             currentItem.addObserver(self, forKeyPath: "status", options: [], context: nil)
+            currentItem.addObserver(self, forKeyPath: "playbackBufferEmpty", options: [], context: nil)
+            currentItem.addObserver(self, forKeyPath: "playbackLikelyToKeepUp", options: [], context: nil)
             self.isObserverAdded = true
         }
         
@@ -505,6 +519,8 @@ import AVFoundation
         if let video = player.currentItem, video.observationInfo != nil {
             if self.isObserverAdded {
                 video.removeObserver(self, forKeyPath: "status")
+                video.removeObserver(self, forKeyPath: "playbackBufferEmpty")
+                video.removeObserver(self, forKeyPath: "playbackLikelyToKeepUp")
                 self.isObserverAdded = false
             }
         }
