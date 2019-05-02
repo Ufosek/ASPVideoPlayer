@@ -34,7 +34,7 @@ import AVFoundation
      */
     public typealias ErrorClosure = ((_ error: NSError) -> Void)?
     
-    // public typealias BufferingClosure = ((_ isBuffering: Bool) -> Void)?
+    public typealias BufferingClosure = ((_ isBuffering: Bool) -> Void)?
     
     // MARK: - Enumerations -
     
@@ -152,7 +152,7 @@ import AVFoundation
      */
     open var error: ErrorClosure
     
-    // open var buffering: BufferingClosure
+    open var buffering: BufferingClosure
     
     // MARK: - Public Variables -
     
@@ -420,6 +420,8 @@ import AVFoundation
         print("PLAYER 666 - OBSERVER - \(keyPath)")
         
         if asset == player.currentItem && keyPath == "status" {
+            buffering?(false)
+            
             if asset.status == .readyToPlay {
                 if status == .new {
                     status = .readyToPlay
@@ -444,10 +446,20 @@ import AVFoundation
                 delegate?.error?(error: videoError)
             }
         } else {
-            if keyPath == "playbackBufferEmpty" {
-                print("PLAYER 666 - BUFFERING")
-            } else if keyPath == "playbackLikelyToKeepUp" {
-                print("PLAYER 666 - BUFFERING FINISHED (?)")
+            if let item = player.currentItem {
+                if keyPath == "playbackBufferEmpty" {
+                    print("PLAYER 666 - BUFFERING = \(item.isPlaybackBufferEmpty)")
+                    
+                    buffering?(true)
+                } else if keyPath == "playbackLikelyToKeepUp" {
+                    print("PLAYER 666 - BUFFERING FINISHED (?) = \(item.isPlaybackLikelyToKeepUp)")
+                    
+                    if item.isPlaybackLikelyToKeepUp == true {
+                        buffering?(false)
+                    } else {
+                        buffering?(true)
+                    }
+                }
             }
         }
     }
