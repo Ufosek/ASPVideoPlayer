@@ -489,8 +489,8 @@ import AVFoundation
     
     private func commonInit() {
         if #available(iOS 12.0, *) {
-            // player.preventsDisplaySleepDuringVideoPlayback = false
-            // videoPlayerLayer.player?.preventsDisplaySleepDuringVideoPlayback = false
+            player.preventsDisplaySleepDuringVideoPlayback = false
+            videoPlayerLayer.player?.preventsDisplaySleepDuringVideoPlayback = false
         } else {
             // Fallback on earlier versions
         }
