@@ -450,7 +450,7 @@ import AVFoundation
                 if keyPath == "playbackBufferEmpty" {
                     print("PLAYER 666 - BUFFERING = \(item.isPlaybackBufferEmpty)")
                     
-                    buffering?(true)
+                    buffering?(false)
                 } else if keyPath == "playbackLikelyToKeepUp" {
                     print("PLAYER 666 - BUFFERING FINISHED (?) = \(item.isPlaybackLikelyToKeepUp)")
                     
