@@ -351,6 +351,9 @@ import AVFoundation
         
         status = .playing
         player.rate = preferredRate
+        if #available(iOS 10.0, *) {
+            player.automaticallyWaitsToMinimizeStalling = true
+        }
         startedVideo?()
         delegate?.startedVideo?()
         
@@ -448,9 +451,11 @@ import AVFoundation
         } else {
             if let item = player.currentItem {
                 if keyPath == "playbackBufferEmpty" {
-                    print("PLAYER 666 - BUFFERING = \(item.isPlaybackBufferEmpty)")
+                    print("PLAYER 666 - BUFFERING = \(!item.isPlaybackBufferEmpty)")
                     
-                    buffering?(false)
+                    if (item.isPlaybackBufferEmpty) {
+                        buffering?(true)
+                    }
                 } else if keyPath == "playbackLikelyToKeepUp" {
                     print("PLAYER 666 - BUFFERING FINISHED (?) = \(item.isPlaybackLikelyToKeepUp)")
                     
@@ -519,9 +524,14 @@ import AVFoundation
             let currentTime = time.seconds
             strongSelf.progress = currentTime / (strongSelf.videoLength != 0.0 ? strongSelf.videoLength : 1.0)
             
-            strongSelf.playingVideo?(strongSelf.progress)
+            print("PLAYER 666 - PROGRESS = \(strongSelf.progress)")
             
-            strongSelf.delegate?.playingVideo?(progress: strongSelf.progress)
+            if (strongSelf.progress >= 0.99) {
+                strongSelf.finishVideo(shouldRestartIfEnabled: true)
+            } else {
+                strongSelf.playingVideo?(strongSelf.progress)
+                strongSelf.delegate?.playingVideo?(progress: strongSelf.progress)
+            }
         }) as AnyObject?
     }
     
@@ -554,12 +564,18 @@ import AVFoundation
     @objc internal func itemDidFinishPlaying(_ notification: Notification) {
         let currentItem = player.currentItem
         let notificationObject = notification.object as? AVPlayerItem
-        
+
+        finishVideo(shouldRestartIfEnabled: currentItem == notificationObject)
+    }
+    
+    //
+    
+    private func finishVideo(shouldRestartIfEnabled: Bool) {
         finishedVideo?()
         
         delegate?.finishedVideo?()
         
-        if currentItem == notificationObject && shouldLoop == true {
+        if shouldRestartIfEnabled && shouldLoop == true {
             status = .playing
             seekToZero()
             player.rate = preferredRate
