@@ -523,9 +523,7 @@ import AVFoundation
             
             let currentTime = time.seconds
             strongSelf.progress = currentTime / (strongSelf.videoLength != 0.0 ? strongSelf.videoLength : 1.0)
-            
-            print("PLAYER 666 - PROGRESS = \(strongSelf.progress)")
-            
+
             if (strongSelf.progress >= 0.99) {
                 strongSelf.finishVideo(shouldRestartIfEnabled: true)
             } else {
